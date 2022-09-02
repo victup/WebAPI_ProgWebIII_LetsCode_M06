@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CRUD_Clientes.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRUD_Clientes.Controllers
@@ -9,104 +10,72 @@ namespace CRUD_Clientes.Controllers
     [Produces("application/json")] //define que a saida é em json
     public class CustomerController : ControllerBase
     {
-        public List<Customer> DatabaseCustomer { get; set; } = new List<Customer>()
+        public CustomerRepository _customerRepository;
+        public CustomerController(IConfiguration configuration)
         {
-            new Customer() { Id = 1, Name = "Marcos", Cpf = " ", Birthday = new DateTime(2000, 12, 28) },
-            new Customer() { Id = 2, Name = "Victor", Cpf = "789.456.123-21", Birthday = new DateTime(2000, 12, 28) },
-            new Customer() { Id = 3, Name = "João", Cpf = "951.147.852-33", Birthday = new DateTime(2000, 12, 28) },
-            new Customer() { Id = 4, Name = "Pedro", Cpf = "159.357.741-88", Birthday = new DateTime(2000, 12, 28) },
-            new Customer() { Id = 5, Name = "Lucas", Cpf = "364.746.666-11", Birthday = new DateTime(2000, 12, 28) },
-        };
-
-
-        public CustomerController()
-        {
+            _customerRepository = new CustomerRepository(configuration);
         }
          
 
         [HttpPost("/cadastrar")] //https://localhost:7156/api/Customer CREATE
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public IActionResult Create(Customer customer)
+        public IActionResult CreateCustomer(Customer customer)
         {
-            if (CheckExisteceCustomer(customer.Id))
+            if (!_customerRepository.InsertCustomer(customer))
             {
-                return Conflict();
+                return BadRequest();
             }
-            else
-            {
-                DatabaseCustomer.Add(customer);
 
-                return Created(nameof(Create), customer);
-            }
+            return CreatedAtAction(nameof(CreateCustomer), customer);
         }
 
-
-        [HttpGet("/{cpf}/pesquisar")] //https://localhost:7156/api/Customer GET
+        [HttpGet("/todosOsClientes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<List<Customer>> Read(string cpf)
+        public ActionResult<List<Customer>> GetCustomers()
         {
-            List<Customer> listReturn = new();
-
-            foreach (var customer in DatabaseCustomer)
-            {
-                 if (customer.Cpf.ToLower() == cpf.ToLower())
-                 listReturn.Add(customer);
-            }
-
-            if (listReturn.Count != 0)
-                return Ok(listReturn);
-            else return NotFound();
+            return Ok(_customerRepository.GetCustomers());
         }
 
-
-        [HttpPut("/{index}/atualizar")] //https://localhost:7156/api/Customer PUT
+        [HttpGet("/{cpf}/pesquisarPorCpf")] //https://localhost:7156/api/Customer GET
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<Customer> Update(int index, Customer who)
+        public ActionResult<List<Customer>> ReadCustomer(string cpf)
         {
-            if (CheckExisteceCustomer(who.Id))
-            {
+            var customer = _customerRepository.GetCustomer(cpf);
+            if (customer == null)
                 return NotFound();
-            }
-            else
-            {
-                DatabaseCustomer[index] = who;
-                return Ok(who);
-            }
+            return Ok(customer);
+        }
 
-                
+
+        [HttpPut("/{cpf}/atualizar")] //https://localhost:7156/api/Customer PUT
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<Customer> Update(string cpf, Customer who)
+        {
+            if (!_customerRepository.UpdateCustomer(cpf, who))
+                return NotFound();
+
+            return Ok(who);
+
+
         }
 
         //https://localhost:7156/api/Customer DELETE
-        [HttpDelete("/{index}/deletar")]
+        [HttpDelete("/{cpf}/deletar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delet(int index)
+        public IActionResult Delet(string cpf)
         {
-            if (!ModelState.IsValid)
+            if (!_customerRepository.DeleteCustomer(cpf))
             {
                 return NotFound();
             }
-
-            DatabaseCustomer.RemoveAt(index);
             return Ok();
         }
 
-        private bool CheckExisteceCustomer(int id)
-        {
-            bool customerExists = false;
-
-            foreach (var customer in DatabaseCustomer)
-            {
-                if(customer.Id == id)
-                    customerExists = true;  
-            }
-
-            return customerExists;
-        }
-
+ 
     }
 
    
