@@ -4,10 +4,11 @@ Repositório do módulo de Web API.
 
 ## Conteúdo
 
-### API CRUD Clientes
+### Primeiros Aprendizados com API
 
-Construa um cadastro completo (CRUD) de clientes. Neste cadastro, o cliente deve possuir cpf, nome, data de nascimento e idade.
+A introdução em API Rest no C# se deu com um exemplo padrão de CRUD, armazenado em listas e utilizando o Swagger para manipulação da API. O Postman também foi utilizado brevemente. 
 
-A API deve seguir os padrões de documentação utilizando os decorators visto em sala. Adicione também statuscode de retorno específicos para cada método. Realize uma validação básica nos dados recebidos do Cliente.
+![image](https://user-images.githubusercontent.com/38474570/188256241-a6edee49-44bc-4268-b8f3-757afa2f2462.png)
 
-![image](https://user-images.githubusercontent.com/38474570/187755229-f7b0e102-6abc-4d10-9c65-c228af94a03e.png)
+
+
